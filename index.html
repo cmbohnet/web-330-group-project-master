@@ -1,0 +1,234 @@
+<!DOCTYPE HTML>
+<html lang = "en">
+<head>
+  <title>Javascript Trivia</title>
+  <link href="css/style.css" rel = "stylesheet">
+  <link href="https://fonts.googleapis.com/css?family=Roboto|Spartan:700&display=swap" rel="stylesheet">
+  <script src="javascript.js"></script>
+  <script type='text/javascript' src='./scripts/knockout-3.5.1.js'></script>
+  <meta charset = "UTF-8" />
+  <meta content="width=device-width, initial-scale=1" name="viewport" />
+
+</head>
+<body>
+  <div id= "title">
+    <h1>Javascript Trivia</h1>
+  </div>
+<div class="scene">
+  <!--Full front and back card element that will be flipped -->
+  <div class="card" id="cardID">
+    <!--Front of the card -->
+    <div class=" card-face card-front slide-container">
+      <div class= "slide flex">
+        <!--Question, ID, and answers bound to activeQustion object-->
+            <div class="question-number"><h3><strong>Question&nbsp;</strong><strong data-bind="text: activeQuestion().id"></strong></h3></div>
+            <div class="question">
+              <p data-bind="text: activeQuestion().question"></p>
+            </div>
+              <hr style="border:2px solid #E52A6F; width:75%;">
+            <div id = "form">
+              <!--DO NOT REMOVE The following two comments are for Knockout containerless interation of button element.  DO NOT REMOVE-->
+            <!-- ko foreach: activeQuestion().answers -->
+            <button data-bind="click: tabulateAnswers" class="button" >
+              <span data-bind="text: $data"></span>
+            </button>
+              <!-- /ko -->
+            </div>
+      </div>
+            <!-- Next and previous buttons -->
+            <div id="arrow">
+              <span data-bind="if: activeQuestionNumber() > 0"><a class="prev" data-bind="click: decrementQuestion">&#10094;</a></span>
+              <a class="next"  data-bind="click: incrementQuestion">&#10095;</a>
+            </div>
+    </div>
+    <!--Back of the card -->
+    <div class="card-face card-back slide-container">
+      <div class= "slide flex">
+        <!--to do: style buttons to show correct/incorrect selections-->
+        <div class="question-number">
+          <h3 id="response"></h3>
+          <p data-bind="text: activeQuestion().rightAnswer"></p>
+        </div>
+        <div class="question">
+        </div>
+        <hr style="border:2px solid #E52A6F; width:75%;">
+        <div class="question-answer">
+          <p data-bind="text: activeQuestion().feedback"></p>
+        </div>
+       <!-- <div id = "form"> -->
+            <!-- ko foreach: activeQuestion().answers -->
+        <!--    <button onclick="flipper()" class="button" >
+              <span data-bind="text: $data"></span>
+            </button> -->
+              <!-- /ko -->
+      <!--  </div> -->
+  </div>
+                  <!-- Next and previous buttons -->
+                  <div id="arrow">
+                    <span data-bind="if: activeQuestionNumber() > 0"><a class="prev" onclick="flipper()" data-bind="click: decrementQuestion">&#10094;</a></span>
+                    <a class="next" onclick="flipper()" data-bind="click: incrementQuestion">&#10095;</a>
+                  </div>
+    </div>
+  </div>
+</div>
+<div class="submit">
+<button onclick="on()" class="show">Show My Results</button>
+</div>
+<div id="overlay">
+  <div id="text">
+    <h2>RESULTS</h2>
+    <hr style="border:2px solid #E52A6F; width:75%;">
+    <h4 data-bind="text: totalMessage"></h4>
+    <h4>Your result: <span data-bind="text: percentage"></h4>
+    <p>Total number correct: <span data-bind="text: numberCorrect "></span></p>
+  </div>
+  
+</div>
+
+<script>
+  function vm() {
+    var self = this;
+    //Set active Question to zero on page load/reload
+    this.activeQuestionNumber = ko.observable(0);
+    //Object with questions and answers
+    this.questions = ko.observableArray([
+      {id: 1,
+        question: 'Which statement is used to execute actions based on a trigger or condition?',
+        rightAnswer: 'Conditional Statement',
+        answers: ['Conditional Statement','Boolean Variable','RegExp or Regular Expression','All of the above'],
+        feedback: 'Conditional Statements determine flow execution of a program based on if the statement results are true.  Different types of conditional statements are available such as If,else-if,else and switch statements.',
+        selectedAnswer: '',
+        answered: false
+      },
+      { id: 2,
+        question: 'Where do you put the JavaScript inside an HTML document?',
+        rightAnswer: 'Both <meta> and <body> sections',
+        answers: ['The <meta> section','The <body> section', 'The <head> section','Both <meta> and <body> sections'],
+        feedback: 'Any number of scripts can be placed in an HTML document as long as they are either in the head or body section.  The meta section is for specifying information such as page description, keywords, author of the document, last modified and other metadata.',
+        selectedAnswer: '',
+        answered: false
+      },
+      {id: 3,
+        question: 'What is the name of the statement that is used to exit or end a loop?',
+        rightAnswer: 'Break statement',
+        answers: ['Break statement','Conditional statement','Close statement','Both A & B'],
+        feedback: 'Without the break statement, the code continues its regular flow even if the desired condition is met.  In inner loops, the break statement only exits the execution of the inner loop.',
+        selectedAnswer: '',
+        answered: false
+      }, 
+      {id: 4,
+        question: 'What is the syntax for using an alert?',
+        rightAnswer: 'alert(“Hello World”);',
+        answers: ['alertbox(“Hello World”);','output(“Hello World”);','alert(“Hello World”);','Both A & C'],
+        feedback: 'Alert displays a pop up box that has a specified message in it with an OK button.  It’s used when you want to change focus from the current window to the alert box to make sure the user got the information before moving on.',
+        selectedAnswer: '',
+        answered: false
+      }, 
+      {id: 5,
+        question: 'What element stores multiple values in a single variable in JavaScript?',
+        rightAnswer: 'Arrays',
+        answers: ['Arrays','Maps','Variables','All of the above'],
+        feedback: 'An array can be created using an array literal or an Array constructor. An example of an array literal declaration is var stringArray = ["asparagus", "beans", "carrot"]  An Array constructor example would be var veggieArray = new Array(3)  It is a good variable to use if you want to store a list of elements and then access them with a single variable.',
+        selectedAnswer: '',
+        answered: false
+      },
+      {id: 6,
+        question: 'Which element represents either "true" or "false" values?',
+        rightAnswer: 'Boolean',
+        answers: ['Condition','Loops','Boolean','Both A & C'],
+        feedback: 'Boolean datatypes return one of 2 values: true or false. They are often used with conditional statements to determine flow execution.',
+        selectedAnswer: '',
+        answered: false
+      },
+      {id: 7,
+        question: 'What is the syntax to refer to an external JavaScript file?',
+        rightAnswer: '<script src=”web330.js”>',
+        answers: ['<script src=”web330.js”>','<script href=”web330.js”>','<script ref=”web330.js”>','Both B & C'],
+        feedback: 'The syntax of the script tag includes a src attribute.  The value of the src attribute should be the path to the javascript file.  It’s recommended to put the script src statement in the HEAD section unless there is a particular location in which it should be loaded in the BODY of the HTML document.',
+        selectedAnswer: '',
+        answered: false
+      },
+      {id: 8,
+        question: 'What can be used to display an information box when a button is clicked on a web page?',
+        rightAnswer: 'Events',
+        answers: ['Constructor','Events','Conditions','All of the above'],
+        feedback: 'Events are actions that occur in the system that the programmer can code to respond to or not as they choose.. Each event has what is called an event handler (or event listener) which is a block of code or function that is run when the event fires.  When code is defined to be run for an event, it is called registering an event handler.',
+        selectedAnswer: '',
+        answered: false
+      },
+      {id: 9,
+        question: 'What is a block of code called that is used to perform a specific task?',
+        rightAnswer: 'Function',
+        answers: ['Method','Loop','Function','All of the above'],
+        feedback: 'A function is a set of statements that can perform a specific task or calculate values.  They can take in parameters and return values.  A function is defined in the scope of which it is to be used.  They are one of the fundamental building blocks of JavaScript and can be nested.',
+        selectedAnswer: '',
+        answered: false
+      },
+      {id: 10,
+        question: 'What is the HTML tag used to include JavaScript code?',
+        rightAnswer: '<script>',
+        answers: ['<javascript>','<JS>','<script>','Both A & C'],
+        feedback: 'HTML tags typically come in pairs with a start tag and corresponding end tag.  The start tag has an opening and closing greater than and less than symbol, <script>, where as the end tag syntax is &lt/script>.',
+        selectedAnswer: '',
+        answered: false
+        }
+    ]);
+    // Tally of correct answers
+      this.numberCorrect = ko.observable(0);
+      this.numberIncorrect = ko.observable(0);
+      this.percentage = ko.pureComputed(function() {
+        return this.numberCorrect() * 10 + '%';
+      })
+      this.totalMessage = ko.computed(function() {
+        var message = '';
+        if(self.numberCorrect() < 7) {
+          message = 'You are a Beginner!';
+        } else if (self.numberCorrect() > 6 && self.numberCorrect() < 8) {
+          message = 'You are a Novice!'
+        } else {
+          message = 'You are an Expert!'
+        }
+        return message
+      })
+    // empty message
+    this.message = '';
+    //function to advance to next question
+      this.incrementQuestion = function() {
+        var previousCount = this.activeQuestionNumber();
+        if (previousCount < this.questions().length - 1) {
+        setTimeout(function() { this.activeQuestionNumber(previousCount + 1); }, 400);
+        } else if (previousCount === this.questions().length -1) {
+          on()
+        }
+      };
+    //function to go back to last question
+      this.decrementQuestion = function() {
+        var previousCount = this.activeQuestionNumber();
+        if (previousCount > 0) {
+        setTimeout(function() { this.activeQuestionNumber(previousCount - 1); }, 400);
+        }
+      };
+    //Computed value to reactively bind the active question object using the activeQuestionNumber variable
+      this.activeQuestion = ko.computed(function() {
+    return this.questions()[this.activeQuestionNumber()];
+  }, this);
+      this.tabulateAnswers = function(ans) {
+        if(self.activeQuestion().selectedAnswer !== '') {
+          flipper();
+        } else if (self.activeQuestion().rightAnswer == ans){
+        self.activeQuestion().selectedAnswer = ans;
+        self.numberCorrect(self.numberCorrect() + 1)
+        flipper();
+        document.getElementById("response").innerHTML = "Good job!  You are correct!";
+        } else {
+          self.activeQuestion().selectedAnswer = ans;
+          self.numberIncorrect(self.numberIncorrect + 1)
+          flipper();
+          document.getElementById("response").innerHTML = "Oops! The correct answer is ...";
+        }
+      }
+  }
+  ko.applyBindings(vm);
+</script>
+</body>
+</html>
